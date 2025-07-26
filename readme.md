@@ -173,6 +173,16 @@ The `events` array is constructed via this table:
 | 10  | SelectHardpoint | Idx      | Chooses active weapon                                             |
 | 11  | SetUncage       | Uncage   | Set's IR seeker to uncaged (follows heat independently) (or or 1) |
 
+### NetVector, NetColor, NetQuaternion
+
+The "Net" classes exist due to serialization constraints, especially in regards to online-AIP, they are lightweight structs that do not provide any functionality beyond storing the basic component values. Each struct has an accessor to retrieve a unity-like struct with the proper methods and functionality you would expect:
+
+```csharp
+Vector3 v3 = new NetVector().vec3;
+Quaternion q = new NetQuaternion().quat;
+Color c = new Color().col;
+```
+
 ## Debugging
 
 AIP provides several debugging utilities. Most of these functions do not work if the AIP does not have debugging enabled (ie via `--debug-allied`). The AIPProvider can also set debugging on/off by modifying the local property `outputEnabled`. It is highly recommended only to use this to conditionally set to false, and use CLI flags to set it to true, otherwise sharing your AI may result in you overwriting other user's debug information.

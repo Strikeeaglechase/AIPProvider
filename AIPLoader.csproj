@@ -7,8 +7,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="UnityGERunner">
-			<HintPath>..\UnityGERunner\bin\Debug\net6.0\UnityGERunner.dll</HintPath>
+		<Reference Include="AIPilot">
+			<HintPath>..\AIPilot\bin\Debug\net6.0\UnityGERunner.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 

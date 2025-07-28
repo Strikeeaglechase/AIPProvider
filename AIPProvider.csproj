@@ -6,14 +6,14 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<Reference Include="AIPilot">
-			<HintPath>..\AIPilot\bin\Debug\net6.0\UnityGERunner.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="call onBuild.bat" />
 	</Target>
+
+	<ItemGroup>
+	  <Reference Include="AIPilot">
+	    <HintPath>..\UnityGERunner\bin\Debug\net6.0\AIPilot.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
 
 </Project>

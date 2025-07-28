@@ -166,6 +166,9 @@ The `events` array is constructed via this table:
 | 3   | RadarTWS        | Id       | Starts TWSing a target                                            |
 | 4   | RadarDropTWS    | Id       | Stops TWS for a target                                            |
 | 5   | RadarSetPDT     | Idx      | Sets a TWS target as PDT based on index, -1 to select STT         |
+| 5   | RadarElevation  | Angle    | Sets radar elevation offset                                       |
+| 5   | RadarAzimuth    | Angle    | Sets radar azimuth offset                                         |
+| 5   | RadarFov        | Angle    | Sets radar FOV                                                    |
 | 6   | Fire            | N/A      | Launches currently selected missile                               |
 | 7   | Flare           | N/A      | Deploys a flare                                                   |
 | 8   | Chaff           | N/A      | Deploys a chaff countermeasure                                    |

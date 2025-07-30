@@ -9,8 +9,11 @@ The only requirement for an AIP is to be a C# DLL that contains a class implemen
 You should not call or reference anything outside of the methods provided by IAIPProvider, with the exception of types as required.
 
 The minimal possible AIP is as follows:
+(Note the usings, "UnityGERunner" generally refers to the AIPSim namespace, for technical reasons it retains this name)
 
 ```csharp
+using UnityGERunner;
+using UnityGERunner.UnityApplication;
 
 public class AIPProvider : IAIPProvider {
 	public override SetupActions Start(SetupInfo info)

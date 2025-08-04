@@ -1,0 +1,1 @@
+"..\HeadlessClient\HeadlessClient.exe" --rvt "\"..\..\AIPSim\AIPilot.exe\" --enemy ..\..\AIPProvider\bin\Debug\net6.0\AIPProvider.dll --debug-enemy --no-map"

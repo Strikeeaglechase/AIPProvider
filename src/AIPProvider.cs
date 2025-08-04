@@ -20,7 +20,7 @@ namespace AIPLoader
     }
 
 
-    public class AIPProvider : IAIPProvider
+    class AIPProvider : IAIPProvider
     {
         private OutboundState state;
         private InboundState output;

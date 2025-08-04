@@ -7,13 +7,15 @@
 	</PropertyGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="call onBuild.bat" />
+		<Exec Condition="!Exists('.\devOnBuild.bat')" Command="call onBuild.bat" />
+		<Exec Condition="Exists('.\devOnBuild.bat')" Command="call devOnBuild.bat" />
 	</Target>
 
 	<ItemGroup>
-	  <Reference Include="AIPilot">
-	    <HintPath>..\UnityGERunner\bin\Debug\net6.0\AIPilot.dll</HintPath>
-	  </Reference>
+		<Reference Include="AIPilot">
+			<HintPath Condition="Exists('..\AIPilot\bin\Debug\net6.0\AIPilot.dll')">..\AIPilot\bin\Debug\net6.0\AIPilot.dll</HintPath>
+			<HintPath Condition="Exists('..\AIPSim\AIPilot.dll')">..\AIPSim\AIPilot.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 </Project>

@@ -38,6 +38,8 @@ public class AIPProvider : IAIPProvider {
 
 Additionally a `Stop` method exists and is called before the program exits if you need to do any cleanup.
 
+All distances/speeds are in meters or meters per seconds. All angles are in degrees.
+
 ## Setup
 
 ```csharp
@@ -53,6 +55,11 @@ struct SetupInfo
 	int id; // AI client Id
 	float spawnDist; // Spawn radius in meters
 	NetVector mapCenterPoint; // Center point of the map
+	string mapPath; // Path to the map heightmap
+	string mapId;
+	int alliedSpawns; // Number of allied aircraft
+	int enemySpawns; // Number of enemy aircraft
+	Dictionary<string, int> weaponRestrictions; // Map of WeaponPath to maximum number of that weapon you can have. If a weapon is not in this map it is unrestricted.
 }
 
 struct SetupActions
@@ -74,7 +81,9 @@ struct OutboundState
 	StateRWRContact[] rwrContacts; // Contacts on the RWR
 	VisuallySpottedTarget[] visualTargets; // Proximity visually spotted targets
 	IRWeaponState ir; // State of the selected heat seeker's sensor
+	DatalinkState datalink; // Any shared datalink information (also contains info you have contributed)
 	string[] weapons; // List of non-fired weapons on the aircraft
+	int selectedWeapon; // Index of the currently selected weapon (not guaranteed to be bound correctly)
 
 	int flareCount;
 	int chaffCount;
@@ -87,7 +96,6 @@ struct Kinematics
 	NetVector position;
 	NetQuaternion rotation;
 	NetVector velocity;
-	NetVector angularVelocity;
 }
 
 struct RadarState
@@ -96,6 +104,7 @@ struct RadarState
 	float elevationAdjust; // The set elevation offset from the horizon
 	float azimuthAdjust; // The set azimuth offset from directly forward
 	float fov; // Current set FOV
+	int pdt; // PDT index, -1 if no PDT is set
 
 	StateTargetData[] twsedTargets; // Full data of all TWS selected targets
 	MinimalDetectedTargetData[] detectedTargets; // Partial data of targets found in a scan, can use radar angle to resolve bearing but TWS is required to get actual data
@@ -132,6 +141,7 @@ struct VisuallySpottedTarget
 {
 	VisualTargetType type; // Enum, 0=Aircraft,1=Missile
 	NetVector direction;
+	float closure; // Closure rate
 	int id;
 	Team team;
 }
@@ -143,13 +153,25 @@ struct IRWeaponState
 	float heat; // Heat received by the sensor
 	NetVector lookDir; // Current seeker look direction
 }
+
+struct RadarDLData { StateTargetData data; int contributedBy; }
+struct VisualDLData { VisuallySpottedTarget data; int contributedBy; }
+struct FriendlyData { int id; NetVector position; NetVector velocity; }
+
+struct DatalinkState
+{
+   RadarDLData[] radar; // Only contains TWS or STT data. It is possible for multiple aircraft to see a target in different places due to ECM
+   VisualDLData[] visual; // Visual data only provides a direction to a target, that direction is relative to the contributor's position so you must correct for that via the friendly data
+   FriendlyData[] friendlies; // Contains all friendly aircraft
+}
+
 ```
 
 ```csharp
 struct InboundState
 	{
-   public NetVector pyr; // Stick position (pitch, yaw, roll)
-   public float throttle; // Throttle setting, 0-100, above 75 is after burner
+   public NetVector pyr; // Stick position (pitch, yaw, roll) (-1, 1)
+   public float throttle; // Throttle setting, 0-1, above 0.75 is afterburner
 
    public NetVector irLookDir; // Command look direction for an IR seeker
 
@@ -169,17 +191,27 @@ The `events` array is constructed via this table:
 | 3   | RadarTWS        | Id       | Starts TWSing a target                                            |
 | 4   | RadarDropTWS    | Id       | Stops TWS for a target                                            |
 | 5   | RadarSetPDT     | Idx      | Sets a TWS target as PDT based on index, -1 to select STT         |
-| 5   | RadarElevation  | Angle    | Sets radar elevation offset                                       |
-| 5   | RadarAzimuth    | Angle    | Sets radar azimuth offset                                         |
-| 5   | RadarFov        | Angle    | Sets radar FOV                                                    |
-| 6   | Fire            | N/A      | Launches currently selected missile                               |
-| 7   | Flare           | N/A      | Deploys a flare                                                   |
-| 8   | Chaff           | N/A      | Deploys a chaff countermeasure                                    |
-| 9   | ChaffFlare      | N/A      | Deploys one of both chaff and flares                              |
-| 10  | SelectHardpoint | Idx      | Chooses active weapon                                             |
-| 11  | SetUncage       | Uncage   | Set's IR seeker to uncaged (follows heat independently) (or or 1) |
+| 6   | RadarElevation  | Angle    | Sets radar elevation offset                                       |
+| 7   | RadarAzimuth    | Angle    | Sets radar azimuth offset                                         |
+| 8   | RadarFov        | Angle    | Sets radar FOV                                                    |
+| 9   | Fire            | N/A      | Launches currently selected missile                               |
+| 10  | Flare           | N/A      | Deploys a flare                                                   |
+| 11  | Chaff           | N/A      | Deploys a chaff countermeasure                                    |
+| 12  | ChaffFlare      | N/A      | Deploys one of both chaff and flares                              |
+| 13  | SelectHardpoint | Idx      | Chooses active weapon                                             |
+| 14  | SetUncage       | Uncage   | Set's IR seeker to uncaged (follows heat independently) (or or 1) |
 
 ### NetVector, NetColor, NetQuaternion
+
+### Terrain
+
+Two utility functions exist to help sample the terrain, additionally you may load the heightmap directly from the setup method.
+
+```csharp
+float HeightAt(NetVector pt); // Returns the hight above ground level (AGL)
+bool Linecast(NetVector a, NetVector b, out NetVector hitPoint); // Checks if a line from point A to point B intersects the terrain, returns the hit point if it does.
+// Note: Because I am stupid this function has variable execution based on the length of the line you are sampling.
+```
 
 The "Net" classes exist due to serialization constraints, especially in regards to online-AIP, they are lightweight structs that do not provide any functionality beyond storing the basic component values. Each struct has an accessor to retrieve a unity-like struct with the proper methods and functionality you would expect:
 
@@ -188,6 +220,8 @@ Vector3 v3 = new NetVector().vec3;
 Quaternion q = new NetQuaternion().quat;
 Color c = new Color().col;
 ```
+
+Each type has implicit operators for conversion as well so it may be possible to just outright pass them around without needing to convert them.
 
 ## Debugging
 
@@ -238,4 +272,22 @@ class DebugSphere : RecorderEvent
 	NetColor? color;
 	int id;
 }
+```
+
+## Rapid Value Testing (RVT)
+
+RVT is a system that allows quickly fine tuning/testing values in your AIP without having to recompile/manually rerun every time. It's primarily intended for testing things like PIDs, however you can use it to test any value.
+
+In this mode, variables you define will be exposed in the HC graph view as a slider, and when you change the value it will automatically rerun the AIP with the new value.
+
+To define a testing value you call the `TestingValue` method in your AIPProvider startup method, giving it a name and default value. The return of this method is the current slider set value (which will default to the default value you set).
+
+```csharp
+float TestingValue(string name, float defaultValue, float minValue, float maxValue, float step = 0.1f)
+```
+
+You enable RVT via the `--rvt` command line flag with HC, and as an argument give a AIPSim start command. Ie:
+
+```bash
+HeadlessClient.exe --rvt "../AIPilot/AIPilot.exe --enemy ../../AIPProvider/bin/Debug\net6.0/AIPProvider.dll --debug-enemy --no-map"
 ```

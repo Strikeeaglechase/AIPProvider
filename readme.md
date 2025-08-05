@@ -66,6 +66,7 @@ struct SetupActions
 {
 	string[] hardpoints; // List of hardpoints you would like, which spawns weapons onto the aircraft
 	string name; // AI Client name, used for replay identification
+	float fuel; // Set's the spawn fuel level in liters, 7100 max
 }
 ```
 
@@ -88,6 +89,7 @@ struct OutboundState
 	int flareCount;
 	int chaffCount;
 
+	float fuel; // Fuel remaining in liters
 	float time; // Sim time in seconds
 }
 
@@ -201,7 +203,6 @@ The `events` array is constructed via this table:
 | 13  | SelectHardpoint | Idx      | Chooses active weapon                                             |
 | 14  | SetUncage       | Uncage   | Set's IR seeker to uncaged (follows heat independently) (or or 1) |
 
-### NetVector, NetColor, NetQuaternion
 
 ### Terrain
 
@@ -210,8 +211,10 @@ Two utility functions exist to help sample the terrain, additionally you may loa
 ```csharp
 float HeightAt(NetVector pt); // Returns the hight above ground level (AGL)
 bool Linecast(NetVector a, NetVector b, out NetVector hitPoint); // Checks if a line from point A to point B intersects the terrain, returns the hit point if it does.
-// Note: Because I am stupid this function has variable execution based on the length of the line you are sampling.
+// Note: Because I am stupid this function has variable time execution based on the length of the line you are sampling.
 ```
+
+### NetVector, NetColor, NetQuaternion
 
 The "Net" classes exist due to serialization constraints, especially in regards to online-AIP, they are lightweight structs that do not provide any functionality beyond storing the basic component values. Each struct has an accessor to retrieve a unity-like struct with the proper methods and functionality you would expect:
 

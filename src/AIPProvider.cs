@@ -46,7 +46,7 @@ namespace AIPLoader
             testRate = TestingValue("testRate", 1, -1, 1, 0.01f);
             return new SetupActions
             {
-                hardpoints = new string[] { "HPEquips/AFighter/af_amraamRail", "HPEquips/AFighter/fa26_iris-t-x1" },
+                hardpoints = new string[] { "", "HPEquips/AFighter/af_amraamRail", "HPEquips/AFighter/fa26_iris-t-x1" },
                 name = "AI Client"
             };
         }

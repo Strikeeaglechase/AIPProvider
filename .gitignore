@@ -4,3 +4,4 @@ obj
 sim
 aipSimResults
 dev*.bat
+dev*.json

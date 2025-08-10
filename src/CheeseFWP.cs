@@ -12,6 +12,7 @@ using UnityGERunner.UnityApplication;
 
 namespace AIPProvider
 {
+#if false
     class CheeseFWP : IAIPProvider
     {
         private OutboundState state;
@@ -58,8 +59,6 @@ namespace AIPProvider
 
             DebugShape(new DebugLine(1001) { start = position, end = position + targetVelocity, color = Color.red });
 
-            Vector3 localAngularVel = InvTransDir(state.kinematics.angularVelocity);
-
             output.throttle = throttlePID.Evaluate(targetVelocity.magnitude, 0f, Time.fixedDeltaTime);
 
 
@@ -92,7 +91,6 @@ namespace AIPProvider
 
             Graph("pyr", output.pyr);
             Graph("throttle", output.throttle);
-            Graph("lav", localAngularVel);
         }
 
         public override InboundState Update(OutboundState state)
@@ -114,4 +112,5 @@ namespace AIPProvider
             return output;
         }
     }
+#endif
 }

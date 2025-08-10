@@ -60,6 +60,7 @@ struct SetupInfo
 	int alliedSpawns; // Number of allied aircraft
 	int enemySpawns; // Number of enemy aircraft
 	Dictionary<string, int> weaponRestrictions; // Map of WeaponPath to maximum number of that weapon you can have. If a weapon is not in this map it is unrestricted.
+	string[] args; // Command line arguments passed to the simulation
 }
 
 struct SetupActions
@@ -83,11 +84,14 @@ struct OutboundState
 	VisuallySpottedTarget[] visualTargets; // Proximity visually spotted targets
 	IRWeaponState ir; // State of the selected heat seeker's sensor
 	DatalinkState datalink; // Any shared datalink information (also contains info you have contributed)
+	KillFeedEntry[] killFeed; // Kill feed entries
+
 	string[] weapons; // List of non-fired weapons on the aircraft
 	int selectedWeapon; // Index of the currently selected weapon (not guaranteed to be bound correctly)
 
 	int flareCount;
 	int chaffCount;
+	int gunAmmo; // Remaining gun ammunition
 
 	float fuel; // Fuel remaining in liters
 	float time; // Sim time in seconds
@@ -117,6 +121,7 @@ struct StateTargetData
 {
 	NetVector position;
 	NetVector velocity;
+	NetQuaternion rotation;
 	Team team;
 	int id;
 }
@@ -143,6 +148,7 @@ struct VisuallySpottedTarget
 {
 	VisualTargetType type; // Enum, 0=Aircraft,1=Missile
 	NetVector direction;
+	NetQuaternion orientation; // Orientation/rotation of the spotted target
 	float closure; // Closure rate
 	int id;
 	Team team;
@@ -165,6 +171,12 @@ struct DatalinkState
    RadarDLData[] radar; // Only contains TWS or STT data. It is possible for multiple aircraft to see a target in different places due to ECM
    VisualDLData[] visual; // Visual data only provides a direction to a target, that direction is relative to the contributor's position so you must correct for that via the friendly data
    FriendlyData[] friendlies; // Contains all friendly aircraft
+}
+
+struct KillFeedEntry
+{
+	int entityId; // ID of the entity that was destroyed
+	float time; // Time when the kill occurred
 }
 
 ```
@@ -200,9 +212,8 @@ The `events` array is constructed via this table:
 | 10  | Flare           | N/A      | Deploys a flare                                                   |
 | 11  | Chaff           | N/A      | Deploys a chaff countermeasure                                    |
 | 12  | ChaffFlare      | N/A      | Deploys one of both chaff and flares                              |
-| 13  | SelectHardpoint | Idx      | Chooses active weapon                                             |
+| 13  | SelectHardpoint | Idx      | Chooses active weapon (-1 for gun)                                |
 | 14  | SetUncage       | Uncage   | Set's IR seeker to uncaged (follows heat independently) (or or 1) |
-
 
 ### Terrain
 

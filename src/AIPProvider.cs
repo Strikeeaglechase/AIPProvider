@@ -34,6 +34,8 @@ namespace AIPLoader
         private float test = 0;
         private float testRate = 0;
 
+        private Vector3 previousVelocity;
+
         private Dictionary<WeaponType, string> weaponClassifications = new Dictionary<WeaponType, string>
         {
             { WeaponType.Radar, "Weapons/Missiles/AIM-120" },
@@ -46,7 +48,7 @@ namespace AIPLoader
             testRate = TestingValue("testRate", 1, -1, 1, 0.01f);
             return new SetupActions
             {
-                hardpoints = new string[] { "", "HPEquips/AFighter/af_amraamRail", "HPEquips/AFighter/fa26_iris-t-x1" },
+                hardpoints = new string[] { "HPEquips/AFighter/fa26_gun", "HPEquips/AFighter/af_amraamRail", "HPEquips/AFighter/fa26_iris-t-x1" },
                 name = "AI Client"
             };
         }
@@ -159,6 +161,8 @@ namespace AIPLoader
             }
         }
 
+        private bool doPull = false;
+
         public override InboundState Update(OutboundState state)
         {
             this.state = state;
@@ -168,8 +172,16 @@ namespace AIPLoader
                 throttle = 100,
             };
 
+            var accel = (state.kinematics.velocity.vec3 - previousVelocity).magnitude / Time.fixedDeltaTime;
+            previousVelocity = state.kinematics.velocity;
+            Graph("accel", accel);
+            Graph("gforce", accel / 9.8f);
+
+            if (state.kinematics.position.y < 3000) doPull = true;
+            if (doPull) output.pyr.x = -1;
+
             AutoSTT();
-            Fly();
+            //Fly();
             RunWeaponEngagement();
             test += testRate;
             Graph("test", test);
@@ -180,6 +192,10 @@ namespace AIPLoader
             //};
 
             //DebugShape(line);
+
+            actions.Add(InboundAction.SelectHardpoint);
+            actions.Add(-1);
+            actions.Add(InboundAction.Fire);
 
             output.events = actions.ToArray();
             actions.Clear();

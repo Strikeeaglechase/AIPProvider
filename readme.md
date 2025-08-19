@@ -197,23 +197,23 @@ struct InboundState
 
 The `events` array is constructed via this table:
 
-| ID  | Name            | Argument | Description                                                       |
-| --- | --------------- | -------- | ----------------------------------------------------------------- |
-| 0   | RadarState      | Power    | Sets the radar on or off (0 or 1)                                 |
-| 1   | RadarSTT        | Id       | Starts STTing a target                                            |
-| 2   | RadarStopSTT    | N/A      | Drops current STT                                                 |
-| 3   | RadarTWS        | Id       | Starts TWSing a target                                            |
-| 4   | RadarDropTWS    | Id       | Stops TWS for a target                                            |
-| 5   | RadarSetPDT     | Idx      | Sets a TWS target as PDT based on index, -1 to select STT         |
-| 6   | RadarElevation  | Angle    | Sets radar elevation offset                                       |
-| 7   | RadarAzimuth    | Angle    | Sets radar azimuth offset                                         |
-| 8   | RadarFov        | Angle    | Sets radar FOV                                                    |
-| 9   | Fire            | N/A      | Launches currently selected missile                               |
-| 10  | Flare           | N/A      | Deploys a flare                                                   |
-| 11  | Chaff           | N/A      | Deploys a chaff countermeasure                                    |
-| 12  | ChaffFlare      | N/A      | Deploys one of both chaff and flares                              |
-| 13  | SelectHardpoint | Idx      | Chooses active weapon (-1 for gun)                                |
-| 14  | SetUncage       | Uncage   | Set's IR seeker to uncaged (follows heat independently) (or or 1) |
+| ID  | Name            | Argument | Unit    | Range          | Description                                               |
+| --- | --------------- | -------- | ------- | -------------- | --------------------------------------------------------- |
+| 0   | RadarState      | State    | N/A     | 0 or 1         | Sets the radar on (1) or off (0)                          |
+| 1   | RadarSTT        | Actor ID | N/A     | Int32          | Starts STTing a target                                    |
+| 2   | RadarStopSTT    | N/A      | N/A     | N/A            | Drops current STT                                         |
+| 3   | RadarTWS        | Actor ID | N/A     | Int32          | Starts TWSing a target                                    |
+| 4   | RadarDropTWS    | Actor ID | N/A     | Int32          | Stops TWS for a target                                    |
+| 5   | RadarSetPDT     | Index    | N/A     | [-1, 3]        | Sets a TWS target as PDT based on index, -1 to select STT |
+| 6   | RadarElevation  | Angle    | Degrees | [-30, 30]      | Sets radar elevation offset                               |
+| 7   | RadarAzimuth    | Angle    | Degrees | [-60, 60]      | Sets radar azimuth offset                                 |
+| 8   | RadarFov        | Angle    | Degrees | [1, 120]       | Sets radar FOV                                            |
+| 9   | Flare           | N/A      | N/A     | N/A            | Deploys a flare                                           |
+| 10  | Chaff           | N/A      | N/A     | N/A            | Deploys a chaff countermeasure                            |
+| 11  | ChaffFlare      | N/A      | N/A     | N/A            | Deploys one of both chaff and flares                      |
+| 12  | SelectHardpoint | Index    | N/A     | [-1, Variable] | Chooses active weapon (-1 for gun)                        |
+| 13  | Fire            | N/A      | N/A     | N/A            | Launches currently selected missile                       |
+| 14  | SetUncage       | State    | N/A     | 0 or 1         | Set's IR seeker to uncaged (follows heat independently)   |
 
 ### Terrain
 
